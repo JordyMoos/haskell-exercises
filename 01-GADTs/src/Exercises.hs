@@ -134,14 +134,27 @@ data EqPair where
 
 -- | a. There's one (maybe two) useful function to write for 'EqPair'; what is
 -- it?
+-- If they are equal (maybe not)
+
+isEqual :: EqPair -> Bool
+isEqual (EqPair a b) =
+  a == b
+
+isNotEqual :: EqPair -> Bool
+isNotEqual =
+  not . isEqual
 
 -- | b. How could we change the type so that @a@ is not existential? (Don't
 -- overthink it!)
 
+data EqPairBurp a where
+  EqPairBurp :: Eq a => a -> a -> EqPairBurp a
+
 -- | c. If we made the change that was suggested in (b), would we still need a
 -- GADT? Or could we now represent our type as an ADT?
 
-
+-- Not needed anymore
+data Burp a = Burp a a
 
 
 
@@ -168,18 +181,26 @@ getInt (IntBox int _) = int
 -- pattern-match:
 
 getInt' :: MysteryBox String -> Int
-getInt' _doSomeCleverPatternMatching = error "Return that value"
+getInt' (StringBox _ (IntBox int _)) = int
 
 -- | b. Write the following function. Again, don't overthink it!
 
 countLayers :: MysteryBox a -> Int
-countLayers = error "Implement me"
+countLayers EmptyBox = 0
+countLayers (IntBox _ inner) = 1 + countLayers inner
+countLayers (StringBox _ inner) = 1 + countLayers inner
+countLayers (BoolBox _ inner) = 1 + countLayers inner
 
 -- | c. Try to implement a function that removes one layer of "Box". For
 -- example, this should turn a BoolBox into a StringBox, and so on. What gets
 -- in our way? What would its type be?
 
-
+-- unBox :: MysteryBox a -> Maybe (MysteryBox b)
+-- unBox EmptyBox = Nothing
+-- unbox (IntBox _ inner) = Just inner
+-- unbox (StringBox _ inner) = Just inner
+-- unbox (BoolBox _ inner) = Just inner
+-- We dont know the inner type
 
 
 
@@ -199,17 +220,17 @@ exampleHList = HCons "Tom" (HCons 25 (HCons True HNil))
 -- should be /safe/: you can use the type signature to tell GHC that you won't
 -- need to pattern-match on HNil, and therefore the return type shouldn't be
 -- wrapped in a 'Maybe'!
+head :: HList (a, b) -> a
+head (HCons x xs) = x
 
 -- | b. Currently, the tuples are nested. Can you pattern-match on something of
 -- type @HList (Int, String, Bool, ())@? Which constructor would work?
 
 patternMatchMe :: HList (Int, String, Bool, ()) -> Int
-patternMatchMe = undefined
+patternMatchMe =  error "We only support tupples"
 
 -- | c. Can you write a function that appends one 'HList' to the end of
 -- another? What problems do you run into?
-
-
 
 
 
