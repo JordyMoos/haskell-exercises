@@ -17,29 +17,36 @@ instance Countable Bool where count x = if x then 1 else 0
 -- things.
 
 data CountableList where
-  -- ...
+  CountableNil :: CountableList
+  CountableCons :: (Countable a, Show a) => a -> CountableList -> CountableList
+
+
+instance Show CountableList where
+  show CountableNil = "[]"
+  show (CountableCons x xs) = show x ++ " : " ++ show xs
 
 
 -- | b. Write a function that takes the sum of all members of a 'CountableList'
 -- once they have been 'count'ed.
 
 countList :: CountableList -> Int
-countList = error "Implement me!"
-
+countList CountableNil = 0
+countList (CountableCons x xs) = count x + countList xs
 
 -- | c. Write a function that removes all elements whose count is 0.
 
 dropZero :: CountableList -> CountableList
-dropZero = error "Implement me!"
+dropZero CountableNil = CountableNil
+dropZero (CountableCons x xs) =
+  if count x == 0 then dropZero xs
+  else CountableCons x $ dropZero xs
 
 
 -- | d. Can we write a function that removes all the things in the list of type
 -- 'Int'? If not, why not?
 
 filterInts :: CountableList -> CountableList
-filterInts = error "Contemplate me!"
-
-
+filterInts = error "We do not know the type"
 
 
 
@@ -48,27 +55,36 @@ filterInts = error "Contemplate me!"
 -- | a. Write a list that can take /any/ type, without any constraints.
 
 data AnyList where
-  -- ...
+  AnyNil :: AnyList
+  AnyCons :: a -> AnyList -> AnyList
 
 -- | b. How many of the following functions can we implement for an 'AnyList'?
 
 reverseAnyList :: AnyList -> AnyList
-reverseAnyList = undefined
+reverseAnyList = go AnyNil
+  where
+    go acc AnyNil = acc
+    go acc (AnyCons x xs) = go (AnyCons x acc) xs
+
+
 
 filterAnyList :: (a -> Bool) -> AnyList -> AnyList
-filterAnyList = undefined
+filterAnyList = error "We do not have the Ord typeclass"
 
 lengthAnyList :: AnyList -> Int
-lengthAnyList = undefined
+lengthAnyList AnyNil = 0
+lengthAnyList (AnyCons x xs) = 1 + lengthAnyList xs
 
 foldAnyList :: Monoid m => AnyList -> m
-foldAnyList = undefined
+foldAnyList = error "Most probably not"
 
 isEmptyAnyList :: AnyList -> Bool
-isEmptyAnyList = undefined
+isEmptyAnyList AnyNil = True
+isEmptyAnyList _ = False
 
 instance Show AnyList where
-  show = error "What about me?"
+  show AnyNil = "[]"
+  show (AnyCons _ xs) = "Something" ++ " : " ++ show xs
 
 
 
@@ -84,6 +100,7 @@ data TransformableTo output where
     ->  input
     -> TransformableTo output
 
+
 -- | ... and the following values of this GADT:
 
 transformable1 :: TransformableTo String
@@ -98,10 +115,13 @@ transformable2 = TransformWith (uncurry (++)) ("Hello,", " world!")
 -- | b. Could we write an 'Eq' instance for 'TransformableTo'? What would we be
 -- able to check?
 
+instance Eq a => Eq (TransformableTo a) where
+  TransformWith f a == TransformWith g b =
+    f a == g b
+
+
 -- | c. Could we write a 'Functor' instance for 'TransformableTo'? If so, write
 -- it. If not, why not?
-
-
 
 
 
